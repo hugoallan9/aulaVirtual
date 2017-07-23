@@ -9,6 +9,7 @@ local_settings.py
 doc/_build
 components
 bower_components
+relateEntorno/
 
 *.egg-info
 build
