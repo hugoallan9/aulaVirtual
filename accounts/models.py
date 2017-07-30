@@ -92,6 +92,21 @@ class User(AbstractBaseUser, PermissionsMixin):
             'in to this account.'
         ),
     )
+
+
+    cui = models.CharField(max_length=100,
+            verbose_name=_('Código único de identificación CUI'),
+            blank=True, null=True, unique=True, db_index=True)
+    cui_verified = models.BooleanField(
+            _('CUI verificado'),
+            default=False,
+            help_text=_(
+                'Indicates that this user\'s cui has been verified '
+                'as being associated with the individual able to log '
+                'in to this account.'
+            ),
+        )
+
     status = models.CharField(max_length=50,
             choices=USER_STATUS_CHOICES,
             verbose_name=_('User status'),

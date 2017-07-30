@@ -855,6 +855,8 @@ class UserForm(StyledModelForm):
             max_length=100,
             label=_("Institutional ID Confirmation"),
             required=False)
+
+
     no_institutional_id = forms.BooleanField(
             label=_("I have no Institutional ID"),
             help_text=_("Check the checkbox if you are not a student "
@@ -864,7 +866,7 @@ class UserForm(StyledModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ("first_name", "last_name", "institutional_id",
+        fields = ("first_name", "last_name", "institutional_id", "cui",
                 "editor_mode")
 
     def __init__(self, *args, **kwargs):
@@ -875,6 +877,7 @@ class UserForm(StyledModelForm):
         self.helper.layout = Layout(
                 Div("last_name", "first_name", css_class="well"),
                 Div("institutional_id", css_class="well"),
+                Div("cui", css_class="well"),
                 Div("editor_mode", css_class="well")
                 )
 
@@ -947,6 +950,29 @@ class UserForm(StyledModelForm):
 
         if not self.is_inst_id_locked:
             inst_id = self.cleaned_data.get("institutional_id")
+            if inst_id and not inst_id_confirmed:
+                raise forms.ValidationError(_("This field is required."))
+            if not inst_id == inst_id_confirmed:
+                raise forms.ValidationError(_("Inputs do not match."))
+        return inst_id_confirmed
+
+
+    def clean_cui(self):
+        inst_id = self.cleaned_data['cui'].strip()
+        if self.is_inst_id_locked:
+            # Disabled fields are not part of form submit--so simply
+            # assume old value. At the same time, prevent smuggled-in
+            # POST parameters.
+            return self.instance.cui
+        else:
+            return inst_id
+
+    def clean_cui_verified(self):
+        inst_id_confirmed = self.cleaned_data.get(
+                "cui_verified")
+
+        if not self.is_inst_id_locked:
+            inst_id = self.cleaned_data.get("cui")
             if inst_id and not inst_id_confirmed:
                 raise forms.ValidationError(_("This field is required."))
             if not inst_id == inst_id_confirmed:
